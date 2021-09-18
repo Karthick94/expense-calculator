@@ -1,0 +1,58 @@
+@import '../../config';
+@import '../../utils';
+
+.expense-form {
+    form {
+        display: flex;
+        flex-direction: column;
+
+        .form-input {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-column-gap: initial;
+            grid-row-gap: 1rem;
+            grid-column-gap: 8%;
+            margin-bottom: 1.5rem;
+
+            .form-controller {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-content: center;
+
+                label {
+                    font-size: 1rem;
+                    margin-bottom: 0.25rem;
+                }
+
+                input {
+                    display: block;
+                    outline: none;
+                    border: none;
+                    border-bottom: 1px solid $secondary-color;
+                    background-color: $dark-color;
+                    padding: 0.5rem;
+                    width: 100%;
+                    color: $light-color;
+
+                    &[type='date'] {
+                        text-transform: uppercase;
+                    }
+                }
+
+                input:focus,
+                input:hover {
+                    border-radius: 5px;
+                }
+            }
+        }
+        .new-expense-buttons {
+            align-self: flex-end;
+
+            & > *:first-child {
+                margin-right: 1.5rem;
+                background: #fa593d;
+            }
+        }
+    }
+}
