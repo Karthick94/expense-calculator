@@ -25,9 +25,7 @@ const ExpenseChart = props => {
 
     props.filteredExpenses.map(filteredExpense => {
         const expenseMonth = filteredExpense.date.getMonth();
-        chartDataPoints[expenseMonth].amount += parseInt(
-            filteredExpense.amount
-        );
+        chartDataPoints[expenseMonth].amount += +filteredExpense.amount;
     });
 
     return (
