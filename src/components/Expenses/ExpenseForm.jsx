@@ -1,56 +1,153 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useReducer, useState } from 'react';
 
 import Card from '../UI/Card';
 
 import './ExpenseForm.scss';
 
+const titleReducer = (state, action) => {
+    if (action.type === 'ADD_NEW') {
+        return {
+            value: action.value,
+            isValid: action.value.trim().length > 0
+        };
+    }
+    if (action.type === 'ON_BLUR') {
+        return {
+            value: state.value,
+            isValid: action.value.trim().length > 0
+        };
+    }
+    return { value: '', isValid: false };
+};
+
+const amountReducer = (state, action) => {
+    if (action.type === 'ADD_NEW') {
+        return {
+            value: action.value,
+            isValid: +action.value.trim() > 0
+        };
+    }
+    if (action.type === 'ON_BLUR') {
+        return {
+            value: state.value,
+            isValid: +action.value.trim() > 1
+        };
+    }
+    return { value: '', isValid: false };
+};
+
+const dateReducer = (state, action) => {
+    if (action.type === 'ADD_NEW') {
+        return {
+            value: action.value,
+            isValid: action.value !== ''
+        };
+    }
+    if (action.type === 'ON_BLUR') {
+        return {
+            value: state.value,
+            isValid: action.value !== ''
+        };
+    }
+    return { value: '', isValid: false };
+};
+
 const ExpenseForm = props => {
-    const [title, setTitle] = useState('');
-    const [amount, setAmount] = useState('');
-    const [date, setDate] = useState('');
-    const [isTitleValid, setIsTitleValid] = useState(true);
-    const [isAmountValid, setIsAmountValid] = useState(true);
-    const [isDateValid, setIsDateValid] = useState(true);
+    const [isFormValid, setIsFormValid] = useState(false);
+
+    const [titleState, titleDispatcher] = useReducer(titleReducer, {
+        value: '',
+        isValid: null
+    });
+    const [amountState, amountDispatcher] = useReducer(amountReducer, {
+        value: '',
+        isValid: null
+    });
+    const [dateState, dateDispatcher] = useReducer(dateReducer, {
+        value: '',
+        isValid: null
+    });
+
+    const { isValid: isTitleValid } = titleState;
+    const { isValid: isAmountValid } = amountState;
+    const { isValid: isDateValid } = dateState;
+
+    useEffect(() => {
+        const identifier = setTimeout(() => {
+            console.log('Checking for validity...');
+            setIsFormValid(isTitleValid && isAmountValid && isDateValid);
+        }, 500);
+
+        return () => {
+            console.log('CLEANUP');
+            clearTimeout(identifier);
+        };
+    }, [isTitleValid, isAmountValid, isDateValid]);
 
     const onTitleChangeEventHandler = e => {
-        setTitle(e.target.value);
-        setIsTitleValid(true);
+        titleDispatcher({
+            type: 'ADD_NEW',
+            value: e.target.value
+        });
+
+        setIsFormValid(
+            e.target.value.trim().length &&
+                amountState.isValid &&
+                dateState.isValid
+        );
     };
     const onAmountChangeEventHandler = e => {
-        setAmount(e.target.value);
-        setIsAmountValid(true);
+        amountDispatcher({
+            type: 'ADD_NEW',
+            value: e.target.value
+        });
+        setIsFormValid(
+            titleState.isValid &&
+                +e.target.value.trim() > 0 &&
+                dateState.isValid
+        );
     };
     const onDateChangeEventHandler = e => {
-        setDate(e.target.value);
-        setIsDateValid(true);
+        dateDispatcher({
+            type: 'ADD_NEW',
+            value: e.target.value
+        });
+
+        setIsFormValid(
+            titleState.isValid && amountState.isValid && e.target.value !== ''
+        );
+    };
+
+    const onTitleBlurEventHandler = e => {
+        titleDispatcher({
+            type: 'ON_BLUR',
+            value: e.target.value
+        });
+    };
+
+    const onAmountBlurEventHandler = e => {
+        amountDispatcher({
+            type: 'ON_BLUR',
+            value: e.target.value
+        });
+    };
+
+    const onDateBlurEventHandler = e => {
+        dateDispatcher({
+            type: 'ON_BLUR',
+            value: e.target.value
+        });
     };
 
     const onSubmitEventHandler = e => {
         e.preventDefault();
 
-        if (title.trim() === '') {
-            setIsTitleValid(false);
-        }
-        if (amount.trim() === '') {
-            setIsAmountValid(false);
-        }
-        if (date.trim() === '') {
-            setIsDateValid(false);
-        }
-
-        if (title.trim() === '' || amount.trim() === '' || date.trim() === '') {
-            return;
-        }
-
         const newExpense = {
-            title,
-            amount,
-            date: new Date(date)
+            title: titleState.value,
+            amount: amountState.value,
+            date: new Date(dateState.value)
         };
-
-        setTitle('');
-        setAmount('');
-        setDate('');
 
         props.onSubmitExpenseForm(newExpense);
     };
@@ -67,7 +164,11 @@ const ExpenseForm = props => {
                         <label
                             className="b"
                             style={{
-                                color: `${!isTitleValid ? '#fa593d' : '#fff'}`
+                                color: `${
+                                    titleState.isValid === false
+                                        ? '#fa593d'
+                                        : '#fff'
+                                }`
                             }}
                             htmlFor="title"
                         >
@@ -76,11 +177,14 @@ const ExpenseForm = props => {
                         <input
                             type="text"
                             name="title"
-                            value={title}
+                            value={titleState.value}
                             onChange={onTitleChangeEventHandler}
+                            onBlur={onTitleBlurEventHandler}
                             style={{
                                 borderColor: `${
-                                    !isTitleValid ? '#fa593d' : '#03c88d'
+                                    titleState.isValid === false
+                                        ? '#fa593d'
+                                        : '#03c88d'
                                 }`
                             }}
                         />
@@ -90,7 +194,11 @@ const ExpenseForm = props => {
                             className="b"
                             htmlFor="amount"
                             style={{
-                                color: `${!isAmountValid ? '#fa593d' : '#fff'}`
+                                color: `${
+                                    amountState.isValid === false
+                                        ? '#fa593d'
+                                        : '#fff'
+                                }`
                             }}
                         >
                             Amount <span className="required">*</span>
@@ -100,11 +208,14 @@ const ExpenseForm = props => {
                             name="amount"
                             min="0.1"
                             step="0.1"
-                            value={amount}
+                            value={amountState.value}
                             onChange={onAmountChangeEventHandler}
+                            onBlur={onAmountBlurEventHandler}
                             style={{
                                 borderColor: `${
-                                    !isAmountValid ? '#fa593d' : '#03c88d'
+                                    amountState.isValid === false
+                                        ? '#fa593d'
+                                        : '#03c88d'
                                 }`
                             }}
                         />
@@ -114,7 +225,11 @@ const ExpenseForm = props => {
                             className="b"
                             htmlFor="date"
                             style={{
-                                color: `${!isDateValid ? '#fa593d' : '#fff'}`
+                                color: `${
+                                    dateState.isValid === false
+                                        ? '#fa593d'
+                                        : '#fff'
+                                }`
                             }}
                         >
                             Date <span className="required">*</span>
@@ -122,11 +237,14 @@ const ExpenseForm = props => {
                         <input
                             type="date"
                             name="date"
-                            value={date}
+                            value={dateState.value}
                             onChange={onDateChangeEventHandler}
+                            onBlur={onDateBlurEventHandler}
                             style={{
                                 borderColor: `${
-                                    !isDateValid ? '#fa593d' : '#03c88d'
+                                    dateState.isValid === false
+                                        ? '#fa593d'
+                                        : '#03c88d'
                                 }`
                             }}
                         />
@@ -140,7 +258,11 @@ const ExpenseForm = props => {
                     >
                         Cancel
                     </button>
-                    <button type="submit" className="btn btn-secondary">
+                    <button
+                        type="submit"
+                        disabled={!isFormValid}
+                        className="btn btn-secondary"
+                    >
                         Add Expense
                     </button>
                 </div>

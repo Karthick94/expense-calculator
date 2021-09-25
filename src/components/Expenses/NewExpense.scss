@@ -12,11 +12,3 @@
         padding: 1.25rem 2.5rem;
     }
 }
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-    -webkit-text-fill-color: #fff;
-    background-color: transparent;
-    transition: background-color 50000s ease-in-out 0s;
-}

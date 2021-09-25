@@ -17,7 +17,7 @@ function App() {
             <div className="container">
                 <div className="header">
                     <h1 className="text-center uppercase py-1">
-                        Expense Calculator
+                        Expense Tracker
                     </h1>
                     <div className="underline"></div>
                 </div>
