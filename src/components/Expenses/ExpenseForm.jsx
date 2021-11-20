@@ -74,15 +74,15 @@ const ExpenseForm = props => {
     const { isValid: isDateValid } = dateState;
 
     useEffect(() => {
-        const identifier = setTimeout(() => {
-            console.log('Checking for validity...');
-            setIsFormValid(isTitleValid && isAmountValid && isDateValid);
-        }, 500);
+        // const identifier = setTimeout(() => {
+        console.log('Checking for validity...');
+        setIsFormValid(isTitleValid && isAmountValid && isDateValid);
+        // }, 500);
 
-        return () => {
-            console.log('CLEANUP');
-            clearTimeout(identifier);
-        };
+        // return () => {
+        //     console.log('CLEANUP');
+        //     clearTimeout(identifier);
+        // };
     }, [isTitleValid, isAmountValid, isDateValid]);
 
     const onTitleChangeEventHandler = e => {
